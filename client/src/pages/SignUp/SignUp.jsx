@@ -1,7 +1,46 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { FcGoogle } from 'react-icons/fc'
+import axios from 'axios'
+import { useContext } from 'react'
+import { AuthContext } from '../../providers/AuthProvider'
+import toast from 'react-hot-toast'
 
 const SignUp = () => {
+  const {createUser, signInWithGoogle, updateUserProfile, loading, setLoading} = useContext(AuthContext)
+  const navigate = useNavigate()
+
+  const handleSignUp = async (e) => {
+    e.preventDefault()
+    const form = e.target
+    const name = form.name.value
+    const email = form.email.value
+    const password = form.password.value
+    const image = form.image.files[0]
+    const formData = new FormData()
+    formData.append('name', name)
+    formData.append('email', email)
+    formData.append('password', password)
+    formData.append('image', image)
+
+    try {
+      setLoading(true)
+      const { data } = await axios.post(`https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`,
+         formData)
+      const user = await createUser(email, password)
+      
+
+      await updateUserProfile(name, data.data.url)
+      console.log(data)
+      navigate('/login')
+      toast.success('Signup successful! Please login to continue.')
+      setLoading(false)
+
+    } catch (err) {
+      console.log(err)
+      toast.error('Signup failed. Please try again.')
+      setLoading(false)
+    }
+  }
   return (
     <div className='flex justify-center items-center min-h-screen'>
       <div className='flex flex-col max-w-md p-6 rounded-md sm:p-10 bg-gray-100 text-gray-900'>
@@ -10,9 +49,8 @@ const SignUp = () => {
           <p className='text-sm text-gray-400'>Welcome to StayVista</p>
         </div>
         <form
-          noValidate=''
-          action=''
-          className='space-y-6 ng-untouched ng-pristine ng-valid'
+          onSubmit={handleSignUp}
+          className='space-y-6 '
         >
           <div className='space-y-4'>
             <div>
@@ -74,9 +112,11 @@ const SignUp = () => {
 
           <div>
             <button
+            disabled={loading}
               type='submit'
               className='bg-rose-500 w-full rounded-md py-3 text-white'
             >
+              {loading ? 'Signing Up...' : 'Sign Up'}
               Continue
             </button>
           </div>
