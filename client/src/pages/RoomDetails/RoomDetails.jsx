@@ -3,29 +3,24 @@ import { Helmet } from 'react-helmet-async'
 import RoomReservation from '../../components/RoomDetails/RoomReservation'
 import Heading from '../../components/Shared/Heading'
 import { useQuery } from '@tanstack/react-query'
-import LoadingSpinner from '../../components/Shared/LoadingSpinner'
 import { useParams } from 'react-router-dom'
+import LoadingSpinner from '../../components/Shared/LoadingSpinner'
 import useAxiosCommon from '../../hooks/useAxiosCommon'
-
-// single room object (Fake Data)
 
 const RoomDetails = () => {
   const { id } = useParams()
-
   const axiosCommon = useAxiosCommon()
 
-  const {data: room = {}, isLoading} = useQuery({
+  const { data: room = {}, isLoading } = useQuery({
     queryKey: ['room', id],
     queryFn: async () => {
-      const res = await axiosCommon.get(`/room/${id}`)
-      return res.data
-    }
+      const { data } = await axiosCommon.get(`/room/${id}`)
+      return data
+    },
   })
 
   if (isLoading) return <LoadingSpinner />
-
-
-
+  console.log(room)
   return (
     <Container>
       <Helmet>
